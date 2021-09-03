@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "com.hashicraft.nomad.Nomad"
+    ],
+    "client": [
+      "com.hashicraft.nomad.NomadClient"
     ]
   },
   "mixins": [

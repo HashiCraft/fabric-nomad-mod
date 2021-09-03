@@ -1,0 +1,5 @@
+{
+  "itemGroup.nomad.general": "Nomad",
+  "block.nomad.nomad_server": "Nomad Server",
+  "block.nomad.nomad_client": "Nomad Client"
+}
