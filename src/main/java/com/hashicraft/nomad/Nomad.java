@@ -6,6 +6,7 @@ import com.hashicraft.nomad.block.NomadServer;
 import com.hashicraft.nomad.block.NomadWires;
 import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
+import com.hashicraft.nomad.item.NomadJob;
 import com.hashicraft.nomad.block.NomadClient;
 import com.hashicraft.nomad.block.entity.NomadClientEntity;
 import com.hashicraft.nomad.util.Recipe;
@@ -16,7 +17,6 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.block.Material;
-import net.minecraft.block.AbstractBlock.ContextPredicate;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,6 +28,10 @@ import net.minecraft.util.registry.Registry;
 public class Nomad implements ModInitializer {
 	public static final String MODID = "nomad";
 	public static final String MOD_NAME = "Nomad";
+
+	public static final Identifier NOMAD_JOB_ID = identifier("nomad_job");
+	public static JsonObject NOMAD_JOB_RECIPE;
+	public static Item NOMAD_JOB;
 
 	public static final Identifier NOMAD_SERVER_ID = identifier("nomad_server");
 	public static JsonObject NOMAD_SERVER_RECIPE;
@@ -48,6 +52,8 @@ public class Nomad implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		NOMAD_JOB = Registry.register(Registry.ITEM, NOMAD_JOB_ID, new NomadJob(new Item.Settings().group(ITEM_GROUP)));
+
 		Registry.register(Registry.BLOCK, NOMAD_SERVER_ID, NOMAD_SERVER);
 		Registry.register(Registry.ITEM, NOMAD_SERVER_ID, new BlockItem(NOMAD_SERVER, new Item.Settings().group(ITEM_GROUP)));
 		NOMAD_SERVER_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, NOMAD_SERVER_ID, FabricBlockEntityTypeBuilder.create(NomadServerEntity::new, NOMAD_SERVER).build(null));

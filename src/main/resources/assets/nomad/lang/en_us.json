@@ -1,5 +1,7 @@
 {
   "itemGroup.nomad.general": "Nomad",
   "block.nomad.nomad_server": "Nomad Server",
-  "block.nomad.nomad_client": "Nomad Client"
+  "block.nomad.nomad_client": "Nomad Client",
+  "item.nomad.nomad_job": "Nomad Job",
+  "block.nomad.nomad_wires": "Cabling"
 }
