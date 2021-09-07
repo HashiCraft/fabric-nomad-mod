@@ -2,6 +2,7 @@
   "itemGroup.nomad.general": "Nomad",
   "block.nomad.nomad_server": "Nomad Server",
   "block.nomad.nomad_client": "Nomad Client",
-  "item.nomad.nomad_job": "Nomad Job",
-  "block.nomad.nomad_wires": "Cabling"
+  "block.nomad.nomad_alloc": "Nomad Allocation",
+  "block.nomad.nomad_wires": "Cabling",
+  "item.nomad.nomad_job": "Nomad Job"
 }

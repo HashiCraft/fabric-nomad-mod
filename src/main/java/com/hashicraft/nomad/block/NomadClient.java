@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.hashicraft.nomad.Nomad;
 import com.hashicraft.nomad.block.entity.NomadClientEntity;
+import com.hashicraft.nomad.util.Status;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -22,16 +23,20 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+
+
 
 public class NomadClient extends BlockWithEntity {
   private static final VoxelShape RAYCAST_SHAPE = createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D);
 
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+  public static final EnumProperty<Status> STATUS = EnumProperty.of("status", Status.class);
 
   public NomadClient(Settings settings) {
     super(settings);
-    setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH));
+    setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH).with(STATUS, Status.DOWN));
   }
 
   public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
@@ -43,18 +48,26 @@ public class NomadClient extends BlockWithEntity {
   }
 
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-    for(int i = 0; i < 4; ++i) {
-        double x = (double)pos.getX();
-        double y = (double)pos.getY();
-        double z = (double)pos.getZ();
-        double vx = ((double)random.nextFloat() - 0.5D) * 0.5D;
-        double vy = ((double)random.nextFloat() - 0.5D) * 0.5D;
-        double vz = ((double)random.nextFloat() - 0.5D) * 0.5D;
-        x = x + 0.5D;
-        y = y + 0.5D;
-        z = z + 0.5D;
-
-        world.addParticle(ParticleTypes.PORTAL, x, y, z, vx, vy, vz);
+    if (state.get(STATUS) == Status.DOWN) {
+      for(int i = 0; i < 4; ++i) {
+        double x = (double)pos.getX() + 0.2D + (double)random.nextInt(6)/10;
+        double y = (double)pos.getY() + 0.6D;
+        double z = (double)pos.getZ() + 0.2D + (double)random.nextInt(6)/10;
+        double vx = 0;
+        double vy = ((double)random.nextFloat()) * 0.1D;
+        double vz = 0;
+        world.addParticle(ParticleTypes.SMOKE, x, y, z, vx, vy, vz);
+      }
+    } else {
+      for(int i = 0; i < 2; ++i) {
+        double x = (double)pos.getX() + 0.2D + (double)random.nextInt(6)/10;
+        double y = (double)pos.getY() + 0.2D;
+        double z = (double)pos.getZ() + 0.2D + (double)random.nextInt(6)/10;
+        double vx = 0;
+        double vy = ((double)random.nextFloat()) * 1.1D;
+        double vz = 0;
+        world.addParticle(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
+      }
     }
   }
 
@@ -71,6 +84,7 @@ public class NomadClient extends BlockWithEntity {
   @Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		builder.add(FACING);
+    builder.add(STATUS);
 	}
 
   @Override

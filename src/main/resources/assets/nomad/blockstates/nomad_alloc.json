@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "nomad:block/nomad_alloc", "uvlock": false },
+    "facing=east":  { "model": "nomad:block/nomad_alloc", "y":  90, "uvlock": false },
+    "facing=south": { "model": "nomad:block/nomad_alloc", "y": 180, "uvlock": false },
+    "facing=west":  { "model": "nomad:block/nomad_alloc", "y": 270, "uvlock": false }
+  }
+}

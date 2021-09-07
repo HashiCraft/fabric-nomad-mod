@@ -13,5 +13,6 @@ public class NomadClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlock(Nomad.NOMAD_SERVER, RenderLayer.getTranslucent());
         BlockRenderLayerMap.INSTANCE.putBlock(Nomad.NOMAD_CLIENT, RenderLayer.getTranslucent());
         BlockRenderLayerMap.INSTANCE.putBlock(Nomad.NOMAD_WIRES, RenderLayer.getTranslucent());
+        BlockRenderLayerMap.INSTANCE.putBlock(Nomad.NOMAD_ALLOC, RenderLayer.getTranslucent());
     }
 }

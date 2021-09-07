@@ -1,8 +1,18 @@
 {
   "variants": {
-    "facing=north": { "model": "nomad:block/nomad_client", "uvlock": false },
-    "facing=east":  { "model": "nomad:block/nomad_client", "y":  90, "uvlock": false },
-    "facing=south": { "model": "nomad:block/nomad_client", "y": 180, "uvlock": false },
-    "facing=west":  { "model": "nomad:block/nomad_client", "y": 270, "uvlock": false }
+    "facing=north,status=down": { "model": "nomad:block/nomad_client_down", "y":   0, "uvlock": false },
+    "facing=east,status=down":  { "model": "nomad:block/nomad_client_down", "y":  90, "uvlock": false },
+    "facing=south,status=down": { "model": "nomad:block/nomad_client_down", "y": 180, "uvlock": false },
+    "facing=west,status=down":  { "model": "nomad:block/nomad_client_down", "y": 270, "uvlock": false },
+
+    "facing=north,status=error": { "model": "nomad:block/nomad_client_down", "y":   0, "uvlock": false },
+    "facing=east,status=error":  { "model": "nomad:block/nomad_client_down", "y":  90, "uvlock": false },
+    "facing=south,status=error": { "model": "nomad:block/nomad_client_down", "y": 180, "uvlock": false },
+    "facing=west,status=error":  { "model": "nomad:block/nomad_client_down", "y": 270, "uvlock": false },
+
+    "facing=north,status=ready": { "model": "nomad:block/nomad_client_ready", "y":   0, "uvlock": false },
+    "facing=east,status=ready":  { "model": "nomad:block/nomad_client_ready", "y":  90, "uvlock": false },
+    "facing=south,status=ready": { "model": "nomad:block/nomad_client_ready", "y": 180, "uvlock": false },
+    "facing=west,status=ready":  { "model": "nomad:block/nomad_client_ready", "y": 270, "uvlock": false }
   }
 }

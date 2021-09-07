@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.hashicraft.nomad.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+  ],
+  "client": [
+    "ModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

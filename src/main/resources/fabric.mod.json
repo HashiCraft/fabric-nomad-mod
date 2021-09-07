@@ -26,7 +26,8 @@
     ]
   },
   "mixins": [
-    "nomad.mixins.json"
+    "nomad.mixins.json",
+    "models.mixins.json"
   ],
 
   "depends": {

@@ -1,0 +1,3 @@
+{
+  "parent": "nomad:block/nomad_alloc"
+}
