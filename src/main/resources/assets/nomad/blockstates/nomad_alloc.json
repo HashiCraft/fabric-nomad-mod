@@ -1,8 +1,28 @@
 {
   "variants": {
-    "facing=north": { "model": "nomad:block/nomad_alloc", "uvlock": false },
-    "facing=east":  { "model": "nomad:block/nomad_alloc", "y":  90, "uvlock": false },
-    "facing=south": { "model": "nomad:block/nomad_alloc", "y": 180, "uvlock": false },
-    "facing=west":  { "model": "nomad:block/nomad_alloc", "y": 270, "uvlock": false }
+    "facing=north,status=pending": { "model": "nomad:block/nomad_alloc_pending", "uvlock": false },
+    "facing=east,status=pending":  { "model": "nomad:block/nomad_alloc_pending", "y":  90, "uvlock": false },
+    "facing=south,status=pending": { "model": "nomad:block/nomad_alloc_pending", "y": 180, "uvlock": false },
+    "facing=west,status=pending":  { "model": "nomad:block/nomad_alloc_pending", "y": 270, "uvlock": false },
+
+    "facing=north,status=running": { "model": "nomad:block/nomad_alloc_running", "uvlock": false },
+    "facing=east,status=running":  { "model": "nomad:block/nomad_alloc_running", "y":  90, "uvlock": false },
+    "facing=south,status=running": { "model": "nomad:block/nomad_alloc_running", "y": 180, "uvlock": false },
+    "facing=west,status=running":  { "model": "nomad:block/nomad_alloc_running", "y": 270, "uvlock": false },
+
+    "facing=north,status=complete": { "model": "nomad:block/nomad_alloc_complete", "uvlock": false },
+    "facing=east,status=complete":  { "model": "nomad:block/nomad_alloc_complete", "y":  90, "uvlock": false },
+    "facing=south,status=complete": { "model": "nomad:block/nomad_alloc_complete", "y": 180, "uvlock": false },
+    "facing=west,status=complete":  { "model": "nomad:block/nomad_alloc_complete", "y": 270, "uvlock": false },
+
+    "facing=north,status=failed": { "model": "nomad:block/nomad_alloc_failed", "uvlock": false },
+    "facing=east,status=failed":  { "model": "nomad:block/nomad_alloc_failed", "y":  90, "uvlock": false },
+    "facing=south,status=failed": { "model": "nomad:block/nomad_alloc_failed", "y": 180, "uvlock": false },
+    "facing=west,status=failed":  { "model": "nomad:block/nomad_alloc_failed", "y": 270, "uvlock": false },
+
+    "facing=north,status=lost": { "model": "nomad:block/nomad_alloc_failed", "uvlock": false },
+    "facing=east,status=lost":  { "model": "nomad:block/nomad_alloc_failed", "y":  90, "uvlock": false },
+    "facing=south,status=lost": { "model": "nomad:block/nomad_alloc_failed", "y": 180, "uvlock": false },
+    "facing=west,status=lost":  { "model": "nomad:block/nomad_alloc_failed", "y": 270, "uvlock": false }
   }
 }

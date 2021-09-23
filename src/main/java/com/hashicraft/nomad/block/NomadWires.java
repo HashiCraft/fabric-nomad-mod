@@ -9,18 +9,16 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldAccess;
 
 public class NomadWires extends BlockWithEntity {
   private static final VoxelShape RAYCAST_SHAPE = createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 0.1D, 16.0D);
@@ -42,6 +40,58 @@ public class NomadWires extends BlockWithEntity {
       .with(SOUTH_CONNECTED, false)
       .with(WEST_CONNECTED, false)
     );
+  }
+
+  public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    if (
+      neighborState.getBlock() == Nomad.NOMAD_SERVER ||
+      neighborState.getBlock() == Nomad.NOMAD_CLIENT ||
+      neighborState.getBlock() == Nomad.NOMAD_WIRES
+    ) {
+      switch (direction) {
+        case NORTH:
+          state = state.with(NomadWires.NORTH_CONNECTED, true);
+          break;
+        case EAST:
+          state = state.with(NomadWires.EAST_CONNECTED, true);
+          break;
+        case SOUTH:
+          state = state.with(NomadWires.SOUTH_CONNECTED, true);
+          break;
+        case WEST:
+          state = state.with(NomadWires.WEST_CONNECTED, true);
+          break;
+        case UP:
+          break;
+        case DOWN:
+          break;
+        default:
+          break;
+      }
+    } else {
+      switch (direction) {
+        case NORTH:
+          state = state.with(NomadWires.NORTH_CONNECTED, false);
+          break;
+        case EAST:
+          state = state.with(NomadWires.EAST_CONNECTED, false);
+          break;
+        case SOUTH:
+          state = state.with(NomadWires.SOUTH_CONNECTED, false);
+          break;
+        case WEST:
+          state = state.with(NomadWires.WEST_CONNECTED, false);
+          break;
+        case UP:
+          break;
+        case DOWN:
+          break;
+        default:
+          break;
+      }
+    }
+
+    return state;
   }
 
   public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
@@ -72,17 +122,7 @@ public class NomadWires extends BlockWithEntity {
 	}
 
   @Override
-  public void onPlaced(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, net.minecraft.block.BlockState state, net.minecraft.entity.LivingEntity placer, net.minecraft.item.ItemStack itemStack) {
-    
-  }
-
-  @Override
   public BlockState getPlacementState(ItemPlacementContext ctx) {
     return getDefaultState().with(FACING, ctx.getPlayerFacing().getOpposite());
-  }
-
-  @Override
-  public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-    return world.isClient ? null : checkType(type, Nomad.NOMAD_WIRES_ENTITY, NomadWiresEntity::tick);
   }
 }

@@ -1,3 +1,3 @@
 {
-  "parent": "nomad:block/nomad_alloc"
+  "parent": "nomad:block/nomad_alloc_pending"
 }

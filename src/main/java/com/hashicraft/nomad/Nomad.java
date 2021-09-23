@@ -1,38 +1,42 @@
 package com.hashicraft.nomad;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.Random;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import com.hashicraft.nomad.block.NomadServer;
-import com.hashicraft.nomad.block.NomadWires;
-import com.hashicraft.nomad.block.entity.NomadServerEntity;
-import com.hashicraft.nomad.block.entity.NomadWiresEntity;
-import com.hashicraft.nomad.item.NomadJob;
 import com.hashicraft.nomad.block.NomadAlloc;
 import com.hashicraft.nomad.block.NomadClient;
+import com.hashicraft.nomad.block.NomadServer;
+import com.hashicraft.nomad.block.NomadWires;
 import com.hashicraft.nomad.block.entity.NomadAllocEntity;
 import com.hashicraft.nomad.block.entity.NomadClientEntity;
-import com.hashicraft.nomad.util.Recipe;
+import com.hashicraft.nomad.block.entity.NomadServerEntity;
+import com.hashicraft.nomad.block.entity.NomadWiresEntity;
+import com.hashicraft.nomad.gui.NomadServerGUI;
+import com.hashicraft.nomad.item.NomadJob;
 import com.hashicraft.nomad.util.Ingredient;
+import com.hashicraft.nomad.util.Recipe;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -57,7 +61,7 @@ public class Nomad implements ModInitializer {
 
 	public static final Identifier NOMAD_ALLOC_ID = identifier("nomad_alloc");
 	public static JsonObject NOMAD_ALLOC_RECIPE;
-	public static final NomadAlloc NOMAD_ALLOC = new NomadAlloc(FabricBlockSettings.of(Material.METAL).hardness(4.0f).nonOpaque().noCollision().luminance(255));
+	public static final NomadAlloc NOMAD_ALLOC = new NomadAlloc(FabricBlockSettings.copyOf(Blocks.AIR).nonOpaque().breakInstantly().dropsNothing());
 	public static BlockEntityType<NomadAllocEntity> NOMAD_ALLOC_ENTITY;
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.build(identifier("general"), () -> new ItemStack(NOMAD_SERVER));
@@ -99,6 +103,7 @@ public class Nomad implements ModInitializer {
 		Registry.register(Registry.BLOCK, NOMAD_SERVER_ID, NOMAD_SERVER);
 		Registry.register(Registry.ITEM, NOMAD_SERVER_ID, new BlockItem(NOMAD_SERVER, new Item.Settings().group(ITEM_GROUP)));
 		NOMAD_SERVER_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, NOMAD_SERVER_ID, FabricBlockEntityTypeBuilder.create(NomadServerEntity::new, NOMAD_SERVER).build(null));
+
 		NOMAD_SERVER_RECIPE = new Recipe(
 			Lists.newArrayList(
 				new Ingredient("G", new Identifier("glass"), "item"),
