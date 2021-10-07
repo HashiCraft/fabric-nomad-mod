@@ -1,17 +1,20 @@
 package com.hashicraft.nomad.block;
 
+import java.util.List;
+
+import com.github.hashicraft.stateful.blocks.StatefulBlock;
 import com.hashicraft.nomad.Nomad;
 import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
 import com.hashicraft.nomad.gui.NomadServerGUI;
 import com.hashicraft.nomad.gui.NomadServerScreen;
 import com.hashicraft.nomad.item.NomadJob;
+import com.hashicraft.nomad.state.NomadServerState;
 import com.hashicraft.nomad.util.NodeStatus;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -25,6 +28,7 @@ import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -32,7 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public class NomadServer extends BlockWithEntity {
+public class NomadServer extends StatefulBlock {
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
   public static final EnumProperty<NodeStatus> STATUS = EnumProperty.of("status", NodeStatus.class);
   public static final IntProperty NODES = IntProperty.of("nodes", 0, 999);
@@ -50,7 +54,12 @@ public class NomadServer extends BlockWithEntity {
     if (!world.isClient) {
       if (item instanceof NomadJob) {
         NomadJob job = (NomadJob)item;
-        server.registerJob(job.getFilename());
+        String name = NomadServerState.getInstance().registerJob(pos, job.getFilename());
+        if (!name.isEmpty()) {
+          broadcast(world, "[INFO] Registered job: " + name, true);
+        } else {
+          broadcast(world, "[ERROR] Could not register job", true);
+        }
       }
     }
     if (world.isClient) {
@@ -62,9 +71,19 @@ public class NomadServer extends BlockWithEntity {
     return ActionResult.SUCCESS;
   }
 
+  private void broadcast(World world, String message, boolean actionBar) {
+    List<? extends PlayerEntity> players = world.getPlayers();
+    for (PlayerEntity player : players) {
+      player.sendMessage(new LiteralText(message), actionBar);
+    }
+  }
+
   @Override
   public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
     super.onBreak(world, pos, state, player);
+
+    NomadServerState.getInstance().removeServer(pos);
+
     Direction facing = state.get(FACING);
     Direction offsetDirection = facing.rotateYCounterclockwise();
 
@@ -76,20 +95,23 @@ public class NomadServer extends BlockWithEntity {
       }
 
       world.removeBlock(pos, false);
+      world.removeBlockEntity(pos);
 
       BlockPos clientPos = pos.offset(offsetDirection.rotateYCounterclockwise());
       world.removeBlock(clientPos, false);
+      world.removeBlockEntity(clientPos);
 
       for (int i = 0; i < 255; i++) {
         BlockPos allocPos = clientPos.offset(Direction.UP, i + 1);
         world.removeBlock(allocPos, false);
+        world.removeBlockEntity(allocPos);
       }
     }
   }
 
   @Override
   public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-    return new NomadServerEntity(pos, state);
+    return new NomadServerEntity(pos, state, this);
   }
 
   @Override
@@ -111,6 +133,6 @@ public class NomadServer extends BlockWithEntity {
 
   @Override
   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-    return world.isClient ? null : checkType(type, Nomad.NOMAD_SERVER_ENTITY, NomadServerEntity::tick);
+    return checkType(type, Nomad.NOMAD_SERVER_ENTITY, NomadServerEntity::tick);
   }
 }

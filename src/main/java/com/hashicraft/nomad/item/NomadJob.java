@@ -1,26 +1,13 @@
 package com.hashicraft.nomad.item;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import com.hashicorp.nomad.apimodel.Job;
-import com.hashicorp.nomad.javasdk.EvaluationResponse;
-import com.hashicorp.nomad.javasdk.NomadApiClient;
-import com.hashicorp.nomad.javasdk.NomadApiConfiguration;
-import com.hashicorp.nomad.javasdk.NomadException;
-import com.hashicorp.nomad.javasdk.NomadJson;
-import com.hashicraft.nomad.Nomad;
-
-import org.apache.commons.io.FileUtils;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;

@@ -1,12 +1,12 @@
 package com.hashicraft.nomad.block;
 
+import com.github.hashicraft.stateful.blocks.StatefulBlock;
 import com.hashicraft.nomad.block.entity.NomadAllocEntity;
 import com.hashicraft.nomad.util.AllocStatus;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
@@ -16,7 +16,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class NomadAlloc extends BlockWithEntity {
+public class NomadAlloc extends StatefulBlock {
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
   public static final EnumProperty<AllocStatus> STATUS = EnumProperty.of("status", AllocStatus.class);
   
@@ -44,6 +44,6 @@ public class NomadAlloc extends BlockWithEntity {
 
   @Override
   public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-    return new NomadAllocEntity(pos, state);
+    return new NomadAllocEntity(pos, state, this);
   }
 }

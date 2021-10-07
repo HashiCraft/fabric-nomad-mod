@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
+import com.hashicraft.nomad.state.NomadServerState;
 import com.hashicraft.nomad.util.NodeStatus;
 
 import net.minecraft.block.Block;
@@ -53,7 +54,6 @@ public class NomadClient extends Block {
         // Get the next block and see if it is a wire or a server.
         nextPos = nextPos.offset(offsetDirection);
         BlockEntity nextEntity = world.getBlockEntity(nextPos);
-
         if (nextEntity instanceof NomadWiresEntity) {
           // If it is a wire, continue.
           continue;
@@ -64,7 +64,6 @@ public class NomadClient extends Block {
           // If it is anything else, something went wrong.
           return null;
         }
-        
       }
     }
     return null;
@@ -92,17 +91,9 @@ public class NomadClient extends Block {
         int index = (Math.abs(distance)/2)-1;
 
         if (player.getMainHandStack().isOf(Items.BUCKET)) {
-          BlockEntity blockEntity = world.getBlockEntity(serverPos);
-          if (blockEntity instanceof NomadServerEntity) {
-            NomadServerEntity serverEntity = (NomadServerEntity)blockEntity;
-            serverEntity.toggleNodeDrain(index);
-          }
+          NomadServerState.getInstance().toggleNodeDrain(serverPos, index);
         }
-      }
-
-      
-
-      
+      }      
     }
 
     return ActionResult.SUCCESS;

@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(RecipeManager.class)
 public class NomadMixin {
-	@Inject(method = "apply", at = @At("HEAD"))
-		public void interceptApply(Map<Identifier, JsonElement> map, ResourceManager resourceManager, Profiler profiler, CallbackInfo info) {
-			map.put(Nomad.NOMAD_SERVER_ID, Nomad.NOMAD_SERVER_RECIPE);
-		}
+	// @Inject(method = "apply", at = @At("HEAD"))
+	// 	public void interceptApply(Map<Identifier, JsonElement> map, ResourceManager resourceManager, Profiler profiler, CallbackInfo info) {
+	// 		map.put(Nomad.NOMAD_SERVER_ID, Nomad.NOMAD_SERVER_RECIPE);
+	// 	}
 }

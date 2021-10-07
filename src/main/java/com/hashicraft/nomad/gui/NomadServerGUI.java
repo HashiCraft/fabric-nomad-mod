@@ -31,7 +31,6 @@ public class NomadServerGUI extends LightweightGuiDescription {
     WButton button = new WButton(new LiteralText("Save"));
     button.setOnClick(() -> {
       server.setAddress(address.getText());
-
       MinecraftClient.getInstance().player.closeScreen();
       MinecraftClient.getInstance().setScreen((Screen)null);
     });

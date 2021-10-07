@@ -1,6 +1,6 @@
 package com.hashicraft.nomad.block.entity;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -62,10 +62,9 @@ public class NomadAllocEntityRenderer<T extends NomadAllocEntity> implements Blo
         break;
     }
 
-    HashMap<String,String> details = blockEntity.getDetails();
     TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
-    Text id = new LiteralText(details.get("id").split("-")[0]);
+    Text id = new LiteralText(blockEntity.getID().split("-")[0]);
     matrices.push();
     matrices.translate(xTranslate, yTranslate, zTranslate);
     matrices.scale(-scale, -scale, scale);
@@ -76,7 +75,7 @@ public class NomadAllocEntityRenderer<T extends NomadAllocEntity> implements Blo
     matrices.pop();
 
 
-    Text name = new LiteralText(details.get("name"));
+    Text name = new LiteralText(blockEntity.getName());
     matrices.push();
     matrices.translate(xTranslate, yTranslate - 0.15F, zTranslate);
     matrices.scale(-scale, -scale, scale);
@@ -86,7 +85,7 @@ public class NomadAllocEntityRenderer<T extends NomadAllocEntity> implements Blo
     textRenderer.drawWithShadow(matrices, name, nameWidth, 0F, 0xFFFFFFFF);
     matrices.pop();
 
-    Text status = new LiteralText(details.get("status"));
+    Text status = new LiteralText(blockEntity.getStatus());
     matrices.push();
     matrices.translate(xTranslate, yTranslate - 0.30F, zTranslate);
     matrices.scale(-scale, -scale, scale);
