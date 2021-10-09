@@ -13,11 +13,18 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.LiteralText;
 
 public class NomadServerGUI extends LightweightGuiDescription {
-  public NomadServerGUI(NomadServerEntity server) {
-    WGridPanel root = new WGridPanel();
+  WGridPanel root = new WGridPanel();
+
+  private NomadServerEntity server;
+
+  public NomadServerGUI() {
     setRootPanel(root);
     root.setSize(240, 50);
     root.setInsets(Insets.ROOT_PANEL);
+  }
+
+  public void setup(NomadServerEntity entity) {
+    this.server = entity;
 
     WLabel label = new WLabel(new LiteralText("Nomad Server"));
     root.add(label, 0, 0, 3, 1);

@@ -135,7 +135,7 @@ public class NomadServerEntity extends StatefulBlockEntity  {
         if (server != null) {
           BlockPos serverPos = server.pos;
           ArrayList<NodeListStub> nodes = server.nodes;
-
+          if (nodes == null) return;
           for (int i = 1; i <= nodes.size() * 2; i++) {
             BlockPos offsetPos = serverPos.offset(offsetDirection, i);
             if (world.isAir(offsetPos)) {
@@ -149,9 +149,9 @@ public class NomadServerEntity extends StatefulBlockEntity  {
               placeClient(world, state, nodePos, NodeStatus.asEnum(node.getStatus()));
     
               ArrayList<AllocationListStub> allocs = server.allocations.get(node.getId());
-              for (int j = 0; j < allocs.size(); j++) {
-                AllocationListStub alloc = allocs.get(j);
-                placeAllocation(world, state, nodePos, j, alloc, AllocStatus.asEnum(alloc.getClientStatus()));
+              int allocIndex = 0;
+              for (AllocationListStub alloc : allocs) {
+                placeAllocation(world, state, nodePos, allocIndex++, alloc, AllocStatus.asEnum(alloc.getClientStatus()));
               }
             }
           }

@@ -3,11 +3,10 @@ package com.hashicraft.nomad.block;
 import java.util.List;
 
 import com.github.hashicraft.stateful.blocks.StatefulBlock;
+import com.hashicraft.events.NomadServerClicked;
 import com.hashicraft.nomad.Nomad;
 import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
-import com.hashicraft.nomad.gui.NomadServerGUI;
-import com.hashicraft.nomad.gui.NomadServerScreen;
 import com.hashicraft.nomad.item.NomadJob;
 import com.hashicraft.nomad.state.NomadServerState;
 import com.hashicraft.nomad.util.NodeStatus;
@@ -18,7 +17,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AirBlockItem;
 import net.minecraft.item.Item;
@@ -64,7 +62,8 @@ public class NomadServer extends StatefulBlock {
     }
     if (world.isClient) {
       if (item instanceof AirBlockItem) {
-        MinecraftClient.getInstance().setScreen(new NomadServerScreen(new NomadServerGUI(server)));
+        NomadServerClicked.EVENT.invoker().interact(server);
+        // MinecraftClient.getInstance().setScreen(new NomadServerScreen(new NomadServerGUI(server)));
       }
     }
 

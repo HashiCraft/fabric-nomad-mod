@@ -54,7 +54,7 @@ public class NomadServerState {
   public void start() {
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     executor.scheduleWithFixedDelay(() -> {
-      if (MinecraftClient.getInstance().world != null && servers.size() > 0) {
+      if (servers.size() > 0) {
         for (Server server : servers.values()) {
           update(server.pos);
         }
