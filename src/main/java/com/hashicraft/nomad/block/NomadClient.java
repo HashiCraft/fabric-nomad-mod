@@ -4,9 +4,12 @@ import java.util.Random;
 
 import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
-import com.hashicraft.nomad.state.NomadServerState;
+import com.hashicraft.nomad.state.AddServerData;
+import com.hashicraft.nomad.state.Messages;
 import com.hashicraft.nomad.util.NodeStatus;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -15,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.Items;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
@@ -49,7 +53,7 @@ public class NomadClient extends Block {
     if (startEntity instanceof NomadWiresEntity) {
       // Rotate clockwise to find the block to the right.
       Direction offsetDirection = direction.rotateClockwise(Axis.Y);
-      
+
       while (true) {
         // Get the next block and see if it is a wire or a server.
         nextPos = nextPos.offset(offsetDirection);
@@ -70,14 +74,15 @@ public class NomadClient extends Block {
   }
 
   @Override
-  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+  public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
+      BlockHitResult hit) {
     if (!world.isClient) {
       Direction facing = state.get(Properties.HORIZONTAL_FACING);
       BlockPos serverPos = findServer(world, pos, facing);
       if (serverPos != null) {
         Axis serverDirection = facing.rotateClockwise(Axis.Y).getAxis();
         int distance = 0;
-        switch(serverDirection) {
+        switch (serverDirection) {
           case X:
             distance = pos.getX() - serverPos.getX();
             break;
@@ -88,12 +93,18 @@ public class NomadClient extends Block {
             break;
         }
 
-        int index = (Math.abs(distance)/2)-1;
+        int index = (Math.abs(distance) / 2) - 1;
 
         if (player.getMainHandStack().isOf(Items.BUCKET)) {
-          NomadServerState.getInstance().toggleNodeDrain(serverPos, index);
+          // fire an event to let the server know a node has been drained
+          AddServerData serverData = new AddServerData(serverPos);
+          serverData.index = index;
+          PacketByteBuf buf = PacketByteBufs.create();
+          buf.writeByteArray(serverData.toBytes());
+
+          ClientPlayNetworking.send(Messages.NODE_DRAIN, buf);
         }
-      }      
+      }
     }
 
     return ActionResult.SUCCESS;
@@ -109,32 +120,32 @@ public class NomadClient extends Block {
 
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
     if (state.get(STATUS) == NodeStatus.DOWN) {
-      for(int i = 0; i < 4; ++i) {
-        double x = (double)pos.getX() + 0.2D + (double)random.nextInt(6)/10;
-        double y = (double)pos.getY() + 0.6D;
-        double z = (double)pos.getZ() + 0.2D + (double)random.nextInt(6)/10;
+      for (int i = 0; i < 4; ++i) {
+        double x = (double) pos.getX() + 0.2D + (double) random.nextInt(6) / 10;
+        double y = (double) pos.getY() + 0.6D;
+        double z = (double) pos.getZ() + 0.2D + (double) random.nextInt(6) / 10;
         double vx = 0;
-        double vy = ((double)random.nextFloat()) * 0.1D;
+        double vy = ((double) random.nextFloat()) * 0.1D;
         double vz = 0;
         world.addParticle(ParticleTypes.SMOKE, x, y, z, vx, vy, vz);
       }
 
-      for(int i = 0; i < 2; ++i) {
-        double x = (double)pos.getX() + 0.2D + (double)random.nextInt(6)/10;
-        double y = (double)pos.getY() + 0.6D;
-        double z = (double)pos.getZ() + 0.2D + (double)random.nextInt(6)/10;
+      for (int i = 0; i < 2; ++i) {
+        double x = (double) pos.getX() + 0.2D + (double) random.nextInt(6) / 10;
+        double y = (double) pos.getY() + 0.6D;
+        double z = (double) pos.getZ() + 0.2D + (double) random.nextInt(6) / 10;
         double vx = 0;
-        double vy = ((double)random.nextFloat()) * 0.01D;
+        double vy = ((double) random.nextFloat()) * 0.01D;
         double vz = 0;
         world.addParticle(ParticleTypes.FLAME, x, y, z, vx, vy, vz);
       }
     } else {
-      for(int i = 0; i < 10; ++i) {
-        double x = (double)pos.getX() + 0.2D + (double)random.nextInt(6)/10;
-        double y = (double)pos.getY() + 0.2D;
-        double z = (double)pos.getZ() + 0.2D + (double)random.nextInt(6)/10;
+      for (int i = 0; i < 10; ++i) {
+        double x = (double) pos.getX() + 0.2D + (double) random.nextInt(6) / 10;
+        double y = (double) pos.getY() + 0.2D;
+        double z = (double) pos.getZ() + 0.2D + (double) random.nextInt(6) / 10;
         double vx = 0;
-        double vy = ((double)random.nextFloat()) * 1.1D;
+        double vy = ((double) random.nextFloat()) * 1.1D;
         double vz = 0;
         world.addParticle(ParticleTypes.ENCHANT, x, y, z, vx, vy, vz);
       }
@@ -147,10 +158,10 @@ public class NomadClient extends Block {
   }
 
   @Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		builder.add(FACING);
+  protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    builder.add(FACING);
     builder.add(STATUS);
-	}
+  }
 
   @Override
   public BlockState getPlacementState(ItemPlacementContext ctx) {

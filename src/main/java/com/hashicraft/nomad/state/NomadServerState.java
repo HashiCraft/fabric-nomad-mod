@@ -7,13 +7,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.github.hashicraft.stateful.blocks.EntityStateData;
+import com.github.hashicraft.stateful.blocks.StatefulBlockEntity;
 import com.hashicorp.nomad.apimodel.AllocationListStub;
 import com.hashicorp.nomad.apimodel.Job;
 import com.hashicorp.nomad.apimodel.NodeListStub;
@@ -23,59 +24,116 @@ import com.hashicorp.nomad.javasdk.NomadException;
 import com.hashicorp.nomad.javasdk.NomadJson;
 import com.hashicorp.nomad.javasdk.ServerQueryResponse;
 import com.hashicraft.nomad.Nomad;
+import com.hashicraft.nomad.block.entity.NomadServerEntity;
 
 import org.apache.commons.io.FileUtils;
 
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 public class NomadServerState {
+  public static boolean registered = false;
+
   public class Server {
     public String address = "";
     public BlockPos pos = null;
     public ArrayList<NodeListStub> nodes = new ArrayList<NodeListStub>();
-    public HashMap<String, ArrayList<AllocationListStub>> allocations = new HashMap<String, ArrayList<AllocationListStub>>();
-    
+    public Hashtable<String, ArrayList<AllocationListStub>> allocations = new Hashtable<String, ArrayList<AllocationListStub>>();
+
     public Server(BlockPos pos, String address) {
       this.pos = pos;
       this.address = address;
     }
   }
-  
+
   static NomadServerState INSTANCE = new NomadServerState();
   private Object mutex = new Object();
-  
+
   private Hashtable<BlockPos, Server> servers = new Hashtable<BlockPos, Server>();
 
   public static NomadServerState getInstance() {
     return INSTANCE;
   }
 
-  public void start() {
+  // register for events sent by the client
+  public static void RegisterStateUpdates(MinecraftServer mcserver) {
+    getInstance().start(mcserver);
+
+    // register the event handler so the client can add nomad servers to monitor
+    ServerPlayNetworking.registerGlobalReceiver(Messages.ADD_SERVER, (MinecraftServer server, ServerPlayerEntity player,
+        ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) -> {
+
+      AddServerData serverData = AddServerData.fromBytes(buf.readByteArray());
+      server.execute(() -> {
+        getInstance().addServer(serverData.getBlockPos(), serverData.server, server.getOverworld());
+      });
+    });
+
+    // register an event for removing an entity
+    ServerPlayNetworking.registerGlobalReceiver(Messages.REMOVE_SERVER,
+        (MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf,
+            PacketSender responseSender) -> {
+
+          AddServerData serverData = AddServerData.fromBytes(buf.readByteArray());
+          server.execute(() -> {
+            getInstance().removeServer(serverData.getBlockPos());
+          });
+        });
+
+    // register an event for draining a node
+    ServerPlayNetworking.registerGlobalReceiver(Messages.NODE_DRAIN, (MinecraftServer server, ServerPlayerEntity player,
+        ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) -> {
+
+      AddServerData serverData = AddServerData.fromBytes(buf.readByteArray());
+      server.execute(() -> {
+        getInstance().toggleNodeDrain(serverData.getBlockPos(), serverData.index);
+      });
+    });
+
+    ServerPlayNetworking.registerGlobalReceiver(Messages.REGISTER_JOB,
+        (MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf,
+            PacketSender responseSender) -> {
+
+          AddServerData serverData = AddServerData.fromBytes(buf.readByteArray());
+          server.execute(() -> {
+            getInstance().registerJob(serverData.getBlockPos(), serverData.filename);
+          });
+        });
+  }
+
+  private void start(MinecraftServer server) {
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     executor.scheduleWithFixedDelay(() -> {
       if (servers.size() > 0) {
-        for (Server server : servers.values()) {
-          update(server.pos);
+        for (Server s : servers.values()) {
+          server.execute(() -> {
+            update(s.pos, server.getOverworld());
+          });
         }
       }
     }, 0, 5, TimeUnit.SECONDS);
   }
 
-  public void addServer(BlockPos pos, String address) {
+  private void addServer(BlockPos pos, String address, ServerWorld world) {
     servers.put(pos, new Server(pos, address));
-    update(pos);
+    update(pos, world);
   }
 
-  public void removeServer(BlockPos pos) {
+  private void removeServer(BlockPos pos) {
     servers.remove(pos);
   }
 
-  public Server getServer(BlockPos pos) {
+  private Server getServer(BlockPos pos) {
     return servers.get(pos);
   }
 
-  public String registerJob(BlockPos pos, String filename) {
+  private String registerJob(BlockPos pos, String filename) {
     try {
       File file = Nomad.NOMAD_JOB_FILES.get(filename);
       String contents = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
@@ -91,30 +149,32 @@ public class NomadServerState {
     }
   }
 
-  public void toggleNodeDrain(BlockPos pos, int index) {
+  private void toggleNodeDrain(BlockPos pos, int index) {
     Server server = this.servers.get(pos);
     NodeListStub node = server.nodes.get(index);
-    
+
     String data;
     String endpoint;
+
     if (node.getSchedulingEligibility().equalsIgnoreCase("ineligible")) {
       endpoint = server.address + "/v1/node/" + node.getId() + "/eligibility";
       data = """
-      {
-        \"Eligibility\": \"eligible\"
-      }
-      """;
+          {
+            \"Eligibility\": \"eligible\"
+          }
+          """;
     } else {
       endpoint = server.address + "/v1/node/" + node.getId() + "/drain";
       data = """
-      {
-        \"DrainSpec\": {
-          \"Deadline\": 3600000000000,
-          \"IgnoreSystemJobs\": true
-        }
-      }
-      """;
+          {
+            \"DrainSpec\": {
+              \"Deadline\": 3600000000000,
+              \"IgnoreSystemJobs\": true
+            }
+          }
+          """;
     }
+
     try {
       URL url = new URL(endpoint);
       HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
@@ -131,34 +191,43 @@ public class NomadServerState {
     }
   }
 
-  public void update(BlockPos pos) {
+  private void update(BlockPos pos, ServerWorld world) {
     // query nomad and update the data
-    synchronized (mutex) {
-      Server server = this.servers.get(pos);
-      server.nodes.clear();
-      server.allocations.clear();
+    System.out.println("Update " + world.isClient);
 
-      NomadApiClient client = new NomadApiClient(server.address);
+    Server server = this.servers.get(pos);
+    server.nodes.clear();
+    server.allocations.clear();
 
-      try {
-        ServerQueryResponse<List<NodeListStub>> nodesResponse = client.getNodesApi().list();
-        for (NodeListStub node : nodesResponse.getValue()) {
-          server.nodes.add(node);
-          server.allocations.put(node.getId(), new ArrayList<AllocationListStub>());
-        }
+    NomadApiClient client = new NomadApiClient(server.address);
 
-        ServerQueryResponse<List<AllocationListStub>> allocationsResponse = client.getAllocationsApi().list();
-        for (AllocationListStub allocation : allocationsResponse.getValue()) {
-          server.allocations.get(allocation.getNodeId()).add(allocation);
-        }
-
-        client.close();
-      } catch (NomadException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
+    try {
+      ServerQueryResponse<List<NodeListStub>> nodesResponse = client.getNodesApi().list();
+      for (NodeListStub node : nodesResponse.getValue()) {
+        server.nodes.add(node);
+        server.allocations.put(node.getId(), new ArrayList<AllocationListStub>());
       }
+
+      ServerQueryResponse<List<AllocationListStub>> allocationsResponse = client.getAllocationsApi().list();
+      for (AllocationListStub allocation : allocationsResponse.getValue()) {
+        server.allocations.get(allocation.getNodeId()).add(allocation);
+      }
+
+      client.close();
+    } catch (NomadException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+
+    // update the entity
+    NomadServerEntity entity = (NomadServerEntity) world.getBlockEntity(pos);
+    entity.server = server;
+
+    // sync the server state with the client nodes
+    // this should probably be a function in the StatefulBlockEntity
+    entity.setPropertiesToState();
+    EntityStateData state = entity.serverState;
+    entity.serverStateUpdated(state);
   }
 }
-
