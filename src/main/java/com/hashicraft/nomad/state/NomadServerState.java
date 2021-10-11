@@ -148,8 +148,10 @@ public class NomadServerState {
       client.close();
       return response.getValue();
     } catch (Exception e) {
-      return null;
+      e.printStackTrace();
     }
+
+    return null;
   }
 
   public void toggleNodeDrain(BlockPos pos, int index) {
