@@ -120,12 +120,14 @@ public class NomadServerState {
     }, 0, 5, TimeUnit.SECONDS);
   }
 
-  private void addServer(BlockPos pos, String address, ServerWorld world) {
+  public void addServer(BlockPos pos, String address, ServerWorld world) {
+    System.out.println("Add server " + pos.toString() + " address " + address);
     servers.put(pos, new Server(pos, address));
     update(pos, world);
   }
 
-  private void removeServer(BlockPos pos) {
+  public void removeServer(BlockPos pos) {
+    System.out.println("Remove server " + pos.toString());
     servers.remove(pos);
   }
 
@@ -134,6 +136,7 @@ public class NomadServerState {
   }
 
   private String registerJob(BlockPos pos, String filename) {
+    System.out.println("Register job " + pos.toString() + " filename " + filename);
     try {
       File file = Nomad.NOMAD_JOB_FILES.get(filename);
       String contents = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
@@ -149,7 +152,9 @@ public class NomadServerState {
     }
   }
 
-  private void toggleNodeDrain(BlockPos pos, int index) {
+  public void toggleNodeDrain(BlockPos pos, int index) {
+    System.out.println("Draining Node " + pos.toString() + " index " + index);
+
     Server server = this.servers.get(pos);
     NodeListStub node = server.nodes.get(index);
 
@@ -193,8 +198,6 @@ public class NomadServerState {
 
   private void update(BlockPos pos, ServerWorld world) {
     // query nomad and update the data
-    System.out.println("Update " + world.isClient);
-
     Server server = this.servers.get(pos);
     server.nodes.clear();
     server.allocations.clear();

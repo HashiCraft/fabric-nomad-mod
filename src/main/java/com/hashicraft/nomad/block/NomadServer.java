@@ -10,6 +10,7 @@ import com.hashicraft.nomad.block.entity.NomadWiresEntity;
 import com.hashicraft.nomad.item.NomadJob;
 import com.hashicraft.nomad.state.AddServerData;
 import com.hashicraft.nomad.state.Messages;
+import com.hashicraft.nomad.state.NomadServerState;
 import com.hashicraft.nomad.util.NodeStatus;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -55,7 +56,8 @@ public class NomadServer extends StatefulBlock {
     Item item = player.getMainHandStack().getItem();
     NomadServerEntity server = (NomadServerEntity) world.getBlockEntity(pos);
 
-    if (!world.isClient) {
+    // TODO this needs fixed
+    if (world.isClient) {
       if (item instanceof NomadJob) {
         NomadJob job = (NomadJob) item;
         // fire an event to let the server know a job has been registered
@@ -64,9 +66,10 @@ public class NomadServer extends StatefulBlock {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeByteArray(serverData.toBytes());
 
-        ClientPlayNetworking.send(Messages.NODE_DRAIN, buf);
+        ClientPlayNetworking.send(Messages.REGISTER_JOB, buf);
       }
     }
+
     if (world.isClient) {
       if (item instanceof AirBlockItem) {
         NomadServerClicked.EVENT.invoker().interact(server);
@@ -86,12 +89,17 @@ public class NomadServer extends StatefulBlock {
   @Override
   public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
     super.onBreak(world, pos, state, player);
-    // fire an event to let the server know that a new server has been added
-    AddServerData serverData = new AddServerData(pos, "");
-    PacketByteBuf buf = PacketByteBufs.create();
-    buf.writeByteArray(serverData.toBytes());
 
-    ClientPlayNetworking.send(Messages.REMOVE_SERVER, buf);
+    if (world.isClient) {
+      // fire an event to let the server know that a new server has been added
+      AddServerData serverData = new AddServerData(pos, "");
+      PacketByteBuf buf = PacketByteBufs.create();
+      buf.writeByteArray(serverData.toBytes());
+
+      ClientPlayNetworking.send(Messages.REMOVE_SERVER, buf);
+    } else {
+      // NomadServerState.getInstance().removeServer(pos);
+    }
 
     Direction facing = state.get(FACING);
     Direction offsetDirection = facing.rotateYCounterclockwise();
