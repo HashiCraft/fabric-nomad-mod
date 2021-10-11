@@ -47,6 +47,7 @@ dependencies {
 	implementation include("com.fasterxml.jackson.core:jackson-annotations:2.12.4")
 	implementation include("com.fasterxml.jackson.core:jackson-core:2.12.4")
 	implementation include("com.fasterxml.jackson.core:jackson-databind:2.12.4")
+	implementation include("commons-logging:commons-logging:1.2")
 
 	modImplementation include("com.github.hashicraft:fabric-stateful-mod:${stateful_version}")
 }
