@@ -6,6 +6,7 @@ import com.hashicraft.nomad.block.entity.NomadServerEntity;
 import com.hashicraft.nomad.block.entity.NomadWiresEntity;
 import com.hashicraft.nomad.state.AddServerData;
 import com.hashicraft.nomad.state.Messages;
+import com.hashicraft.nomad.state.NomadServerState;
 import com.hashicraft.nomad.util.NodeStatus;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -76,26 +77,27 @@ public class NomadClient extends Block {
   @Override
   public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
       BlockHitResult hit) {
-    if (!world.isClient) {
-      Direction facing = state.get(Properties.HORIZONTAL_FACING);
-      BlockPos serverPos = findServer(world, pos, facing);
-      if (serverPos != null) {
-        Axis serverDirection = facing.rotateClockwise(Axis.Y).getAxis();
-        int distance = 0;
-        switch (serverDirection) {
-          case X:
-            distance = pos.getX() - serverPos.getX();
-            break;
-          case Z:
-            distance = pos.getZ() - serverPos.getZ();
-            break;
-          default:
-            break;
-        }
 
-        int index = (Math.abs(distance) / 2) - 1;
+    if (world.isClient) {
+      if (player.getMainHandStack().isOf(Items.BUCKET)) {
+        Direction facing = state.get(Properties.HORIZONTAL_FACING);
+        BlockPos serverPos = findServer(world, pos, facing);
+        if (serverPos != null) {
+          Axis serverDirection = facing.rotateClockwise(Axis.Y).getAxis();
+          int distance = 0;
+          switch (serverDirection) {
+            case X:
+              distance = pos.getX() - serverPos.getX();
+              break;
+            case Z:
+              distance = pos.getZ() - serverPos.getZ();
+              break;
+            default:
+              break;
+          }
 
-        if (player.getMainHandStack().isOf(Items.BUCKET)) {
+          int index = (Math.abs(distance) / 2) - 1;
+
           // fire an event to let the server know a node has been drained
           AddServerData serverData = new AddServerData(serverPos);
           serverData.index = index;
